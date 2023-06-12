@@ -21,16 +21,18 @@ export default function Home() {
     };
   }
 
-  console.log({ data })
-
   return (
     <main className='main'>
       <div >
         <input onChange={onFileChange} type="file" id="input" accept='.xlsx' required />
       </div>
       <div className='classroom'>
-        <div id='whiteBoard'>white board</div>
-        {data && data.map(student => <Student student={student} />)}
+        <div id='whiteBoard'>
+          <span>white board</span>
+        </div>
+        <div id='seats'>
+          {data && data.map(student => <Student key={student.id} student={student} />)}
+        </div>
       </div>
     </main>
   )
@@ -38,7 +40,47 @@ export default function Home() {
 
 
 const Student = ({ student }) => {
-  return <div className='student'>
-    <span>{student.id}. {student.first_name} {student.last_name}</span>
+  const selfId = `${student.first_name}_${student.id}`;
+
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function drag(ev) {
+    ev.dataTransfer.setData("movedStudentId", selfId);
+    console.count("drag!!!");
+  }
+
+  function drop(ev) {
+    console.count("drop!!!");
+
+    const movedStudent = document.getElementById(
+      ev.dataTransfer.getData("movedStudentId"),
+    );
+    const self = document.getElementById(selfId);
+    self.parentElement.style.border = 'RGB(237, 82, 73)'
+    self.parentElement.style.backgroundColor = 'RGB(237, 82, 73)'
+    movedStudent.parentElement.style.border = 'RGB(237, 82, 73)'
+    movedStudent.parentElement.style.backgroundColor = 'RGB(237, 82, 73)'
+
+    const temp = self.innerText;
+
+    self.innerText = movedStudent.innerText;
+
+    movedStudent.innerText = temp;
+    ev.preventDefault();
+  }
+
+  return (
+    <div
+      onDrop={(e) => drop(e)}
+      onDragOver={(e) => allowDrop(e)}
+      className="student"
+      draggable
+      onDragStart={drag}>
+      <span id={selfId}>
+        {student.id}. {student.first_name} {student.last_name}
+      </span>
     </div>
-}
+  );
+};
